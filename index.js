@@ -35,7 +35,14 @@ client.connect((err) => {
         console.log("result");
 
     });
-
+    app.put('/users', async (req, res) => {
+        const user = req.body;
+        const filter = { email: user.email };
+        const options = { upsert: true };
+        const updateDoc = { $set: user };
+        const result = await usersCollection.updateOne(filter, updateDoc, options);
+        res.json(result);
+    });
     // get all services
     app.get("/Services", async (req, res) => {
         const result = await servicesCollection.find({}).toArray();
@@ -86,6 +93,10 @@ client.connect((err) => {
         const result = await reviewCollection.insertOne(req.body);
         res.send(result);
     });
+    app.post('/reviews', async (req, res) => {
+        const reviews = await reviewCollection.insertOne(req.body);
+        res.json(reviews);
+    });
     //See Review
     app.get("/seeReview", async (req, res) => {
         const result = await reviewCollection.find({}).toArray();
@@ -95,7 +106,7 @@ client.connect((err) => {
     app.post("/addUserInfo", async (req, res) => {
         console.log("req.body");
         const result = await usersCollection.insertOne(req.body);
-        res.send(result);
+        res.json(result);
         console.log(result);
     });
     //  make admin
@@ -127,7 +138,16 @@ client.connect((err) => {
         console.log(result);
         res.send(result);
     });
-
+    app.get('/users/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await usersCollection.findOne(query);
+        let isAdmin = false;
+        if (user?.role === 'admin') {
+            isAdmin = true;
+        }
+        res.json({ admin: isAdmin });
+    })
     /// all order
     app.get("/allOrders", async (req, res) => {
         // console.log("hello");
